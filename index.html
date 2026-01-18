@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamza Al Othmani - Grade Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { text-align: center; color: #38bdf8; margin-bottom: 5px; }
+    .author-tag { color: #94a3b8; margin-bottom: 20px; font-style: italic; }
+    .container { width: 100%; max-width: 1000px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #1e293b;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    th, td { border: 1px solid #334155; padding: 10px 5px; text-align: center; }
+    th { background: #020617; color: #38bdf8; }
+    input {
+      width: 45px;
+      padding: 5px;
+      text-align: center;
+      border-radius: 4px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: white;
+    }
+    /* ????? ??? ??????? ???? ????? ?????? */
+    .coef-input {
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    .btn-container { text-align: center; margin-top: 20px; }
+    button {
+      padding: 12px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #38bdf8;
+      color: #020617;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #0ea5e9; transform: scale(1.05); }
+    .result-box { margin-top: 20px; text-align: center; }
+    .average-text { font-size: 26px; font-weight: bold; }
+    .status-text { font-size: 30px; font-weight: bold; margin-top: 10px; }
+    .pass { color: #22c55e; }
+    .fail { color: #ef4444; }
+    .instagram-link {
+      margin-top: 30px;
+      text-decoration: none;
+      color: #fb7185;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Grade Calculator</h1>
+    <div class="author-tag" style="text-align: center;">By Hamza TCSF10</div>
+
+    <table id="gradesTable">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Coef (Editable)</th>
+          <th>Quiz 1</th>
+          <th>Quiz 2</th>
+          <th>Quiz 3</th>
+          <th>Quiz 4</th>
+          <th>Activities</th>
+          <th>Average</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="btn-container">
+        <button onclick="calculate()">Calculate Result</button>
+        <div class="result-box">
+            <div id="finalAverage" class="average-text"></div>
+            <div id="status" class="status-text"></div>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: center;">
+        <a href="https://www.instagram.com/hamza____al.othmani7/" target="_blank" class="instagram-link">
+            Follow me on Instagram: @hamza____al.othmani7
+        </a>
+    </div>
+</div>
+
+<script>
+    // ?????????? (???? ???????? ??????? ?? ??????)
+    const subjects = [
+      { name: "Mathematics", coef: 4 }, 
+      { name: "Physics & Chemistry", coef: 4 },
+      { name: "Life & Earth Sciences", coef: 4 },
+      { name: "French Language", coef: 4 },
+      { name: "Arabic Language", coef: 2 },
+      { name: "English Language", coef: 2 },
+      { name: "Islamic Education", coef: 2 },
+      { name: "Social Studies", coef: 2 },
+      { name: "Philosophy", coef: 2 },
+      { name: "Physical Education", coef: 2 },
+      { name: "Computer Science", coef: 2 },
+      { name: "Diligence & Behavior", coef: 1 }
+    ];
+
+    const tableBody = document.getElementById('tableBody');
+
+    subjects.forEach((sub, i) => {
+      const row = `
+        <tr>
+          <td style="text-align:left; padding-left:10px;">${sub.name}</td>
+          <td><input type="number" value="${sub.coef}" class="coef-input" id="coef${i}"></td>
+          <td><input type="number" step="0.01" class="g${i}"></td>
+          <td><input type="number" step="0.01" class="g${i}"></td>
+          <td><input type="number" step="0.01" class="g${i}"></td>
+          <td><input type="number" step="0.01" class="g${i}"></td>
+          <td><input type="number" step="0.01" class="g${i}"></td>
+          <td id="avg${i}" style="font-weight:bold; color:#38bdf8;">-</td>
+        </tr>
+      `;
+      tableBody.innerHTML += row;
+    });
+
+    function calculate() {
+      let totalWeightedScore = 0;
+      let totalCoefficients = 0;
+      let hasGrades = false;
+
+      for (let i = 0; i < subjects.length; i++) {
+        // ????? ??????? ?????? ?? ?????? (???? ?? ???? ????)
+        const currentCoef = parseFloat(document.getElementById("coef" + i).value) || 0;
+        
+        const inputs = document.querySelectorAll(".g" + i);
+        let sum = 0;
+        let count = 0;
+
+        inputs.forEach(inp => {
+          if (inp.value !== "") {
+            sum += parseFloat(inp.value);
+            count++;
+          }
+        });
+
+        if (count > 0) {
+          const subjectAvg = sum / count;
+          document.getElementById("avg" + i).innerText = subjectAvg.toFixed(2);
+          totalWeightedScore += (subjectAvg * currentCoef);
+          totalCoefficients += currentCoef;
+          hasGrades = true;
+        } else {
+          document.getElementById("avg" + i).innerText = "-";
+        }
+      }
+
+      const avgDisplay = document.getElementById("finalAverage");
+      const statusDisplay = document.getElementById("status");
+
+      if (hasGrades && totalCoefficients > 0) {
+        const finalAvg = totalWeightedScore / totalCoefficients;
+        avgDisplay.innerText = "General Average: " + finalAvg.toFixed(2);
+        
+        if (finalAvg >= 10) {
+          statusDisplay.innerText = "SUCCESS";
+          statusDisplay.className = "status-text pass";
+        } else {
+          statusDisplay.innerText = "FAILURE";
+          statusDisplay.className = "status-text fail";
+        }
+      } else {
+        avgDisplay.innerText = "";
+        statusDisplay.innerText = "Please enter grades";
+        statusDisplay.className = "status-text fail";
+      }
+    }
+</script>
+
+</body>
+</html>
